@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+/* Custom styles for AtomicPDF */
+.pdf-viewer-container {
+  /* Custom PDF viewer styles can go here */
+}
+
+/* Ensure full height for our app */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Loading animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
