@@ -60,16 +60,21 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   const handleManageBilling = async () => {
     if (!profile?.stripe_customer_id) {
       toast.error('No billing information found');
+      console.error('Profile missing stripe_customer_id:', profile);
       return;
     }
+
+    console.log('Opening billing portal for customer:', profile.stripe_customer_id);
 
     try {
       const { createPortalSession } = await import('../lib/stripe');
       const portalUrl = await createPortalSession(profile.stripe_customer_id);
+      console.log('Portal URL received:', portalUrl);
       window.open(portalUrl, '_blank');
       
     } catch (error: any) {
       console.error('Error opening billing portal:', error);
+      console.error('Full error details:', error.response || error);
       toast.error(error.message || 'Failed to open billing portal');
     }
   };
