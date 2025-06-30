@@ -14,6 +14,7 @@ const PDFEditor: React.FC = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isAnyModalOpen, setIsAnyModalOpen] = useState(false);
   const [toolSettings, setToolSettings] = useState({
     color: '#ff0000',
     strokeWidth: 3,
@@ -26,6 +27,33 @@ const PDFEditor: React.FC = () => {
       isUnderline: false
     }
   });
+
+  // Track modal state to disable annotation layer
+  React.useEffect(() => {
+    // Check for any modal with high z-index (like subscription modals)
+    const checkForModals = () => {
+      const modals = document.querySelectorAll('[class*="z-50"], [class*="fixed inset-0"], .modal-overlay');
+      const hasVisibleModals = Array.from(modals).some(modal => {
+        const computedStyle = window.getComputedStyle(modal as Element);
+        return computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden';
+      });
+      
+      setIsAnyModalOpen(showLoginModal || hasVisibleModals);
+    };
+
+    checkForModals();
+    
+    // Set up a mutation observer to detect when modals are added/removed
+    const observer = new MutationObserver(checkForModals);
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true, 
+      attributes: true, 
+      attributeFilter: ['class', 'style'] 
+    });
+
+    return () => observer.disconnect();
+  }, [showLoginModal]);
 
   // Update tool settings when tool changes
   React.useEffect(() => {
@@ -127,6 +155,7 @@ const PDFEditor: React.FC = () => {
             onPageChange={handlePageChange}
             onTotalPagesChange={handleTotalPagesChange}
             currentPageNumber={currentPageNumber}
+            isModalOpen={isAnyModalOpen}
           />
         </div>
       </div>

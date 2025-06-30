@@ -22,6 +22,7 @@ interface PDFViewerProps {
   onPageChange: (pageNumber: number) => void;
   onTotalPagesChange: (total: number) => void;
   currentPageNumber?: number;
+  isModalOpen?: boolean;
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ 
@@ -33,7 +34,8 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   onAnnotationDelete,
   onPageChange,
   onTotalPagesChange,
-  currentPageNumber
+  currentPageNumber,
+  isModalOpen = false
 }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -222,6 +224,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
                 toolSettings={toolSettings}
                 onAnnotationAdd={onAnnotationAdd}
                 onAnnotationDelete={onAnnotationDelete}
+                disabled={isModalOpen}
               />
             )}
             

@@ -31,6 +31,7 @@ interface AnnotationLayerProps {
   toolSettings: any;
   onAnnotationAdd?: (annotation: Annotation) => void;
   onAnnotationDelete?: (annotationId: string) => void;
+  disabled?: boolean; // Add disabled prop for when modals are open
 }
 
 const AnnotationLayer: React.FC<AnnotationLayerProps> = ({ 
@@ -41,7 +42,8 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   currentPage,
   toolSettings,
   onAnnotationAdd,
-  onAnnotationDelete 
+  onAnnotationDelete,
+  disabled = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -139,7 +141,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
 
   // Drawing functions
   const startDrawing = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!selectedTool || !canvasRef.current) return;
+    if (!selectedTool || !canvasRef.current || disabled) return;
 
     const pos = getMousePos(e);
     
@@ -393,22 +395,22 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   return (
     <div 
       ref={overlayRef}
-      className="absolute inset-0 pointer-events-auto"
+      className={`absolute inset-0 ${disabled ? 'pointer-events-none' : 'pointer-events-auto'}`}
       style={{ 
         width: scaledWidth, 
         height: scaledHeight,
-        zIndex: 1000
+        zIndex: disabled ? 1 : 1000 // Lower z-index when disabled so modals appear on top
       }}
     >
       <canvas
         ref={canvasRef}
         width={scaledWidth}
         height={scaledHeight}
-        className={`absolute inset-0 ${selectedTool === 'eraser' ? 'cursor-not-allowed' : 'cursor-crosshair'}`}
-        onMouseDown={startDrawing}
-        onMouseMove={isDrawing ? draw : undefined}
-        onMouseUp={stopDrawing}
-        onMouseLeave={() => stopDrawing()}
+        className={`absolute inset-0 ${disabled ? 'pointer-events-none cursor-default' : selectedTool === 'eraser' ? 'cursor-not-allowed' : 'cursor-crosshair'}`}
+        onMouseDown={disabled ? undefined : startDrawing}
+        onMouseMove={disabled ? undefined : (isDrawing ? draw : undefined)}
+        onMouseUp={disabled ? undefined : stopDrawing}
+        onMouseLeave={disabled ? undefined : () => stopDrawing()}
       />
       
       {/* Text Input Overlay */}
