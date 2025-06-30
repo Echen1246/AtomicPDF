@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { buffer } from 'micro';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(
@@ -26,15 +27,24 @@ export default async function handler(req, res) {
   let event;
 
   try {
-    // Read raw body for signature verification
-    const buf = req.body;
-    event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
+    // Use micro's buffer to read the raw body properly in Vercel
+    const rawBody = await buffer(req);
+    
+    console.log('Webhook received - Body length:', rawBody.length);
+    console.log('Webhook signature:', sig);
+    console.log('Using webhook secret:', webhookSecret ? 'Yes (length: ' + webhookSecret.length + ')' : 'No');
+    
+    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    console.log('Webhook event constructed successfully:', event.type);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
+    console.error('Error details:', err);
     return res.status(400).json({ error: 'Invalid signature' });
   }
 
   try {
+    console.log('Processing webhook event:', event.type);
+    
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
