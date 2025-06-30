@@ -32,116 +32,87 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
+    let isCancelled = false;
     
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    }).catch((error) => {
-      console.error('Error getting session:', error);
-      if (mounted) {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+    const initAuth = async () => {
+      try {
+        // Get current session
+        const { data: { session } } = await supabase.auth.getSession();
         
-        console.log('Auth state changed:', event, session?.user?.email);
+        if (isCancelled) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN' && session?.user) {
-          setLoading(true); // Set loading while fetching profile
-          await fetchProfile(session.user.id);
-        } else if (event === 'SIGNED_OUT') {
-          setProfile(null);
+        if (session?.user) {
+          // Fetch profile but don't block on it
+          fetchProfile(session.user.id).finally(() => {
+            if (!isCancelled) setLoading(false);
+          });
+        } else {
           setLoading(false);
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          // Handle token refresh without setting loading
-          await fetchProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Auth init error:', error);
+        if (!isCancelled) setLoading(false);
+      }
+    };
+
+    initAuth();
+
+    // Simple auth state listener - only handle actual changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (isCancelled) return;
+      
+      console.log('Auth event:', event);
+      
+      // Only handle meaningful events
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
         }
       }
-    );
+    });
+
+    // Always clear loading after 3 seconds as failsafe
+    const timeout = setTimeout(() => {
+      if (!isCancelled) setLoading(false);
+    }, 3000);
 
     return () => {
-      mounted = false;
+      isCancelled = true;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   }, []);
 
   const fetchProfile = async (userId: string) => {
     try {
-      console.log('Fetching profile for user:', userId);
-      
-      // Add timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
-      );
-      
-      const fetchPromise = supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
-      
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
       if (error) {
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating new profile');
           // Profile doesn't exist, create one
           await createProfile(userId);
         } else {
-          throw error;
+          console.error('Profile fetch error:', error);
+          // Don't throw, just use defaults
         }
-      } else {
-        console.log('Profile loaded successfully:', data);
+      } else if (data) {
         setProfile(data);
-        // Force refresh if subscription data seems outdated
-        if (data && !data.subscription_tier) {
-          console.warn('Profile missing subscription data, setting defaults');
-          setProfile({
-            ...data,
-            subscription_tier: data.subscription_tier || 'free',
-            subscription_status: data.subscription_status || 'active',
-            pdf_count_used: data.pdf_count_used || 0
-          });
-        }
       }
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      if (error.message !== 'Profile fetch timeout') {
-        toast.error('Error loading profile. Please refresh the page.');
-      }
-      // Set a default profile to prevent infinite loading
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData?.user) {
-        setProfile({
-          id: userId,
-          email: userData.user.email!,
-          full_name: userData.user.user_metadata.full_name || userData.user.email!.split('@')[0],
-          avatar_url: userData.user.user_metadata.avatar_url,
-          subscription_tier: 'free',
-          subscription_status: 'active',
-          pdf_count_used: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } as Profile);
-      }
-    } finally {
-      console.log('Setting loading to false');
-      setLoading(false);
+    } catch (error) {
+      console.error('Profile error:', error);
+      // Don't show error toast - just fail silently
     }
   };
 
@@ -238,14 +209,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshProfile = async () => {
     if (!user) return;
-    setLoading(true);
     await fetchProfile(user.id);
-  };
-
-  // Add a method to manually reset stuck loading state
-  const resetLoadingState = () => {
-    console.log('Manually resetting loading state');
-    setLoading(false);
   };
 
   const value: AuthContextType = {

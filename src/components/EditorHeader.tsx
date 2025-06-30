@@ -8,66 +8,8 @@ const EditorHeader: React.FC = () => {
   const { user, profile, signInWithGoogle, loading, refreshProfile } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-
-  // Add timeout for loading state
-  React.useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => {
-        console.warn('Header loading timeout reached');
-        setLoadingTimeout(true);
-      }, 5000); // 5 second timeout
-      
-      return () => clearTimeout(timer);
-    } else {
-      setLoadingTimeout(false);
-    }
-  }, [loading]);
-
-  if (loading && !loadingTimeout) {
-    return (
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
-            <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-          <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-      </div>
-    );
-  }
-
-  // If loading timeout reached, show refresh option
-  if (loading && loadingTimeout) {
-    return (
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8">
-              <svg viewBox="0 0 32 32" className="w-full h-full">
-                <rect x="6" y="4" width="18" height="24" rx="2" ry="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.5"/>
-                <path d="M20 4 L24 8 L20 8 Z" fill="#e5e7eb" stroke="#3b82f6" strokeWidth="1"/>
-                <text x="15" y="14" fontFamily="Arial, sans-serif" fontSize="4" fontWeight="bold" textAnchor="middle" fill="#dc2626">PDF</text>
-                <circle cx="19" cy="22" r="2.5" fill="none" stroke="#3b82f6" strokeWidth="0.8"/>
-                <circle cx="19" cy="22" r="0.8" fill="#3b82f6"/>
-              </svg>
-            </div>
-            <h1 className="text-lg font-bold text-gray-900">AtomicPDF</h1>
-          </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Refresh</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Show header immediately with whatever data we have
+  // Don't wait for profile - user data is enough
 
   // Not authenticated - show login/signup buttons
   if (!user) {
@@ -114,12 +56,22 @@ const EditorHeader: React.FC = () => {
     );
   }
 
-  // Authenticated - show user profile with dropdown
-  if (profile) {
-    const currentLimits = SUBSCRIPTION_LIMITS[profile.subscription_tier];
+  // Authenticated - show user info (with or without profile)
+  if (user) {
+    // Use profile data if available, otherwise use defaults
+    const displayProfile = profile || {
+      email: user.email!,
+      full_name: user.user_metadata?.full_name || user.email!.split('@')[0],
+      avatar_url: user.user_metadata?.avatar_url,
+      subscription_tier: 'free',
+      subscription_status: 'active',
+      pdf_count_used: 0
+    };
+    
+    const currentLimits = SUBSCRIPTION_LIMITS[displayProfile.subscription_tier as keyof typeof SUBSCRIPTION_LIMITS];
     const usagePercentage = currentLimits.pdfs_per_month === -1 
       ? 0 
-      : (profile.pdf_count_used / currentLimits.pdfs_per_month) * 100;
+      : (displayProfile.pdf_count_used / currentLimits.pdfs_per_month) * 100;
 
     return (
       <>
@@ -142,7 +94,7 @@ const EditorHeader: React.FC = () => {
               {/* Usage indicator */}
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-xs text-gray-600">
-                  {profile.pdf_count_used} / {currentLimits.pdfs_per_month === -1 ? '∞' : currentLimits.pdfs_per_month} PDFs
+                  {displayProfile.pdf_count_used} / {currentLimits.pdfs_per_month === -1 ? '∞' : currentLimits.pdfs_per_month} PDFs
                 </span>
                 {currentLimits.pdfs_per_month !== -1 && (
                   <div className="w-20 bg-gray-200 rounded-full h-1 mt-1">
@@ -158,7 +110,7 @@ const EditorHeader: React.FC = () => {
               </div>
 
               {/* Upgrade button for free users */}
-              {profile.subscription_tier === 'free' && (
+              {displayProfile.subscription_tier === 'free' && (
                 <button
                   onClick={() => setShowUserProfile(true)}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm px-4 py-2 rounded-md hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
@@ -173,13 +125,13 @@ const EditorHeader: React.FC = () => {
                 className="flex items-center space-x-2 hover:bg-gray-50 rounded-md p-2 transition-colors"
               >
                 <img
-                  src={profile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=3b82f6&color=fff`}
-                  alt={profile.full_name}
+                  src={displayProfile.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayProfile.full_name)}&background=3b82f6&color=fff`}
+                  alt={displayProfile.full_name}
                   className="w-8 h-8 rounded-full"
                 />
                 <div className="hidden sm:block text-left">
-                  <p className="text-sm font-medium text-gray-900">{profile.full_name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{profile.subscription_tier}</p>
+                  <p className="text-sm font-medium text-gray-900">{displayProfile.full_name}</p>
+                  <p className="text-xs text-gray-500 capitalize">{displayProfile.subscription_tier}</p>
                 </div>
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
