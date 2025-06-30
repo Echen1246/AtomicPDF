@@ -2,19 +2,73 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.svg" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#3b82f6" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="AtomicPDF - Professional PDF Editor. Edit, annotate, and manage PDF documents with powerful tools for text, highlights, drawings, and page operations. 100% private - your files never leave your browser."
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <meta name="keywords" content="PDF editor, PDF annotation, PDF tools, online PDF editor, free PDF editor, PDF text editor, PDF highlighter, PDF drawing, page management, privacy-focused PDF editor, local PDF processing" />
+    <meta name="author" content="AtomicPDF" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://atomicpdf.com/" />
+    <meta property="og:title" content="AtomicPDF - Professional PDF Editor Built for Privacy" />
+    <meta property="og:description" content="Edit, annotate, and manage PDF documents with powerful tools. Everything happens locally in your browser – your files never leave your device." />
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.svg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://atomicpdf.com/" />
+    <meta property="twitter:title" content="AtomicPDF - Professional PDF Editor Built for Privacy" />
+    <meta property="twitter:description" content="Edit, annotate, and manage PDF documents with powerful tools. Everything happens locally in your browser – your files never leave your device." />
+    <meta property="twitter:image" content="%PUBLIC_URL%/logo512.svg" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://atomicpdf.com/" />
+    
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.svg" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "AtomicPDF",
+      "description": "Professional PDF editor with annotation tools, page operations, and local-only processing for maximum privacy.",
+      "url": "https://atomicpdf.com",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "Text annotations with full formatting",
+        "Smart highlighting with multiple colors", 
+        "Freehand drawing and sketching",
+        "Page rotation and management",
+        "PDF merging and collating", 
+        "Export to multiple formats",
+        "100% private local processing"
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "name": "AtomicPDF"
+      }
+    }
+    </script>
+    
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -24,7 +78,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>AtomicPDF - Professional PDF Editor Built for Privacy</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -31,6 +31,7 @@ interface SidebarProps {
   currentPageNumber: number;
   totalPages: number;
   onFileUpdate: (file: File, preservePage?: boolean) => void;
+  onExportAttempt: () => boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -43,7 +44,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   toolSettings,
   currentPageNumber,
   totalPages,
-  onFileUpdate 
+  onFileUpdate,
+  onExportAttempt
 }) => {
   const [activeTab, setActiveTab] = useState<'tools' | 'pages' | 'export'>('tools');
   const [moveToPage, setMoveToPage] = useState(1);
@@ -103,6 +105,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     if (!currentFile) {
       alert('Please upload a PDF file first');
       return;
+    }
+
+    // Check authentication and usage limits
+    if (!onExportAttempt()) {
+      return; // User will see login modal or usage limit message
     }
 
     setIsProcessing(true);
@@ -251,12 +258,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-800">AtomicPDF</h1>
-        <p className="text-sm text-gray-600">Professional PDF Editor</p>
-      </div>
-
       {/* File Upload */}
       <div className="p-4 border-b border-gray-200">
         <label className="block">

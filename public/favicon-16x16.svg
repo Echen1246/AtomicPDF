@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- PDF Document -->
+  <rect x="3" y="2" width="9" height="12" rx="1" fill="#ffffff" stroke="#3b82f6" stroke-width="1"/>
+  
+  <!-- Corner Fold -->
+  <path d="M9 2 L12 5 L9 5 Z" fill="#e5e7eb"/>
+  
+  <!-- PDF Text -->
+  <text x="7.5" y="8" font-family="Arial, sans-serif" font-size="2.5" font-weight="bold" text-anchor="middle" fill="#dc2626">PDF</text>
+  
+  <!-- Simple Atomic Symbol -->
+  <circle cx="7.5" cy="11" r="2" fill="none" stroke="#3b82f6" stroke-width="0.5"/>
+  <circle cx="7.5" cy="11" r="0.5" fill="#3b82f6"/>
+</svg> 
