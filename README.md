@@ -32,6 +32,7 @@
 - **Local-only Processing**: All PDF operations happen in your browser
 - **No Server Uploads**: Your documents never leave your device
 - **Client-side Annotations**: Annotations stored locally until export
+- **Analytics**: Anonymous usage analytics to improve user experience
 
 ## 🚀 Getting Started
 
