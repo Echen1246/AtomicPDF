@@ -6,7 +6,10 @@ import {
   Eraser,
   Download,
   Upload,
-  RotateCcw
+  RotateCcw,
+  RectangleHorizontal,
+  Signature,
+  Minus,
 } from 'lucide-react';
 import { downloadPDFWithAnnotations } from '../utils/pdfExport';
 import { 
@@ -90,6 +93,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'highlight', name: 'Highlight', icon: Highlighter, description: 'Highlight text' },
     { id: 'draw', name: 'Draw', icon: Pen, description: 'Free-hand drawing' },
     { id: 'eraser', name: 'Eraser', icon: Eraser, description: 'Erase annotations' },
+    { id: 'redact', name: 'Redact', icon: RectangleHorizontal, description: 'Redact sensitive content' },
+    { id: 'sign', name: 'Sign', icon: Signature, description: 'Add a signature' },
+    { id: 'line', name: 'Add Line', icon: Minus, description: 'Draw a straight line' },
   ];
 
 
@@ -331,7 +337,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             {/* Tool Settings */}
-            {selectedTool && (selectedTool === 'draw' || selectedTool === 'highlight') && (
+            {selectedTool && (selectedTool === 'draw' || selectedTool === 'highlight' || selectedTool === 'line') && (
               <div className="mt-6 p-4 bg-gray-50 rounded-lg">
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Tool Settings</h4>
                 

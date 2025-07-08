@@ -7,7 +7,7 @@ interface Point {
 
 interface Annotation {
   id: string;
-  type: 'text' | 'highlight' | 'draw';
+  type: 'text' | 'highlight' | 'draw' | 'redact' | 'sign' | 'line';
   pageNumber: number;
   points: Point[];
   text?: string;
@@ -145,7 +145,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
 
     const pos = getMousePos(e);
     
-    if (selectedTool === 'text') {
+    if (selectedTool === 'text' || selectedTool === 'sign') {
       setIsCreatingTextBox(true);
       setIsDrawing(true);
       setCurrentPath([pos]);
@@ -189,13 +189,37 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
       ctx.setLineDash([]);
       return;
     }
-
+    
     if (selectedTool === 'eraser') {
       eraseAtPoint(pos);
       // Redraw canvas to show visual feedback of erased annotations
       redrawAnnotations();
       return;
     }
+
+    // Live drawing for line and redact
+    if (selectedTool === 'line' || selectedTool === 'redact') {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      redrawAnnotations();
+      const startPos = currentPath[0];
+      
+      if (selectedTool === 'line') {
+        ctx.strokeStyle = toolSettings.color || '#ff0000';
+        ctx.lineWidth = toolSettings.strokeWidth || 3;
+        ctx.beginPath();
+        ctx.moveTo(startPos.x * pdfScale, startPos.y * pdfScale);
+        ctx.lineTo(pos.x * pdfScale, pos.y * pdfScale);
+        ctx.stroke();
+      } else if (selectedTool === 'redact') {
+        const width = pos.x - startPos.x;
+        const height = pos.y - startPos.y;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(startPos.x * pdfScale, startPos.y * pdfScale, width * pdfScale, height * pdfScale);
+      }
+      setCurrentPath(prev => [prev[0], pos]);
+      return;
+    }
+
 
     if (selectedTool !== 'draw' && selectedTool !== 'highlight') return;
 
@@ -221,7 +245,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   const stopDrawing = useCallback(() => {
     if (!isDrawing) return;
 
-    if (selectedTool === 'text' && isCreatingTextBox && currentPath.length > 0) {
+    if ((selectedTool === 'text' || selectedTool === 'sign') && isCreatingTextBox && currentPath.length > 0) {
       // Get the final mouse position from the last drawn rectangle
       const canvas = canvasRef.current;
       if (canvas) {
@@ -248,16 +272,22 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
       return;
     }
 
+    // For line and redact, we only need the start and end points
+    const finalPath = (selectedTool === 'line' || selectedTool === 'redact') && currentPath.length > 1 
+      ? [currentPath[0], currentPath[currentPath.length - 1]] 
+      : currentPath;
+
+
     // Save annotation for current page
     const currentColor = toolSettings.color || (selectedTool === 'highlight' ? '#ffff00' : '#ff0000');
     const currentStrokeWidth = toolSettings.strokeWidth || (selectedTool === 'highlight' ? 15 : 3);
     
     const newAnnotation: Annotation = {
       id: Date.now().toString(),
-      type: selectedTool as 'text' | 'highlight' | 'draw',
+      type: selectedTool as 'text' | 'highlight' | 'draw' | 'redact' | 'sign' | 'line',
       pageNumber: currentPage,
-      points: currentPath,
-      color: currentColor,
+      points: finalPath,
+      color: selectedTool === 'redact' ? '#000000' : currentColor,
       strokeWidth: currentStrokeWidth
     };
 
@@ -273,12 +303,12 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     if (textInputValue.trim()) {
       const newAnnotation: Annotation = {
         id: Date.now().toString(),
-        type: 'text',
+        type: selectedTool === 'sign' ? 'sign' : 'text',
         pageNumber: currentPage,
         points: [{ x: textInputBounds.x, y: textInputBounds.y }],
         text: textInputValue,
         fontSize: textFormatting.fontSize,
-        fontFamily: textFormatting.fontFamily,
+        fontFamily: selectedTool === 'sign' ? "'Cedarville Cursive', cursive" : textFormatting.fontFamily,
         color: textFormatting.textColor,
         isBold: textFormatting.isBold,
         isItalic: textFormatting.isItalic,
@@ -305,7 +335,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     currentPageAnnotations.forEach(annotation => {
-      if (annotation.type === 'text' && annotation.text && annotation.points.length > 0) {
+      if ((annotation.type === 'text' || annotation.type === 'sign') && annotation.text && annotation.points.length > 0) {
         const x = annotation.points[0].x * pdfScale;
         const y = annotation.points[0].y * pdfScale;
         const width = (annotation.width || 200) * pdfScale;
@@ -362,7 +392,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
              ctx.stroke();
            }
          });
-              } else if (annotation.type === 'draw' || annotation.type === 'highlight') {
+      } else if (annotation.type === 'draw' || annotation.type === 'highlight') {
           ctx.globalAlpha = annotation.type === 'highlight' ? 0.4 : 1;
           ctx.strokeStyle = annotation.color || (annotation.type === 'highlight' ? '#ffff00' : '#ff0000');
           ctx.lineWidth = annotation.strokeWidth || (annotation.type === 'highlight' ? 15 : 3);
@@ -377,6 +407,20 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
           }
           ctx.stroke();
         }
+      } else if (annotation.type === 'line' && annotation.points.length >= 2) {
+        ctx.strokeStyle = annotation.color || '#ff0000';
+        ctx.lineWidth = annotation.strokeWidth || 3;
+        ctx.beginPath();
+        ctx.moveTo(annotation.points[0].x * pdfScale, annotation.points[0].y * pdfScale);
+        ctx.lineTo(annotation.points[1].x * pdfScale, annotation.points[1].y * pdfScale);
+        ctx.stroke();
+      } else if (annotation.type === 'redact' && annotation.points.length >= 2) {
+        const startPos = annotation.points[0];
+        const endPos = annotation.points[1];
+        const width = (endPos.x - startPos.x) * pdfScale;
+        const height = (endPos.y - startPos.y) * pdfScale;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(startPos.x * pdfScale, startPos.y * pdfScale, width, height);
       }
       ctx.globalAlpha = 1;
     });
