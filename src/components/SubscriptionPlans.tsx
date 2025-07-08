@@ -33,10 +33,13 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
       const { createCheckoutSession } = await import('../lib/stripe');
       const getStripe = (await import('../lib/stripe')).default;
       
+      const plan = PRICING_PLANS[tier];
+
       const sessionId = await createCheckoutSession(
-        PRICING_PLANS[tier].priceId, 
+        plan.priceId, 
         profile.email, 
-        profile.id
+        profile.id,
+        plan.mode
       );
       
       const stripe = await getStripe();
@@ -84,6 +87,7 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
       case 'basic': return <Zap className="w-6 h-6" />;
       case 'standard': return <Star className="w-6 h-6" />;
       case 'professional': return <Crown className="w-6 h-6" />;
+      case 'unlimited': return <Crown className="w-6 h-6" />;
     }
   };
 
@@ -92,6 +96,7 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
       case 'basic': return 'text-blue-600 bg-blue-50 border-blue-200';
       case 'standard': return 'text-purple-600 bg-purple-50 border-purple-200';
       case 'professional': return 'text-amber-600 bg-amber-50 border-amber-200';
+      case 'unlimited': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
     }
   };
 
@@ -106,7 +111,8 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
       'free': 0,
       'basic': 1,
       'standard': 2,
-      'professional': 3
+      'professional': 3,
+      'unlimited': 4
     };
     
     return tierOrder[profile.subscription_tier] < tierOrder[tier];

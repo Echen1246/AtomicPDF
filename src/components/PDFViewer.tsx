@@ -17,8 +17,7 @@ interface PDFViewerProps {
   selectedTool: string | null;
   annotations: any[];
   toolSettings: any;
-  onAnnotationAdd: (annotation: any) => void;
-  onAnnotationDelete: (annotationId: string) => void;
+  onAnnotationsChange: (annotations: any[]) => void;
   onPageChange: (pageNumber: number) => void;
   onTotalPagesChange: (total: number) => void;
   currentPageNumber?: number;
@@ -30,8 +29,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   selectedTool, 
   annotations, 
   toolSettings, 
-  onAnnotationAdd, 
-  onAnnotationDelete,
+  onAnnotationsChange,
   onPageChange,
   onTotalPagesChange,
   currentPageNumber,
@@ -216,14 +214,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
             {/* Annotation Layer Overlay */}
             {pageWidth > 0 && pageHeight > 0 && (
               <AnnotationLayer
+                allAnnotations={annotations}
+                onAnnotationsChange={onAnnotationsChange}
                 selectedTool={selectedTool}
                 pdfScale={scale}
                 pageWidth={pageWidth}
                 pageHeight={pageHeight}
                 currentPage={pageNumber}
                 toolSettings={toolSettings}
-                onAnnotationAdd={onAnnotationAdd}
-                onAnnotationDelete={onAnnotationDelete}
                 disabled={isModalOpen}
               />
             )}

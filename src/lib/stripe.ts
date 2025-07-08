@@ -15,43 +15,56 @@ export default getStripe;
 export const PRICING_PLANS = {
   basic: {
     name: 'Basic',
-    price: 2.99,
-    priceId: 'price_1RfWLyDG3wjiUUIB8eqsutL2', // Replace with your actual Stripe price ID
+    price: 0.99,
+    priceId: 'price_1RiQG6DG3wjiUUIB5rrU7y1O',
     features: [
-      '25 PDFs per month',
+      '50 Downloads per month',
       'Text annotations & highlights',
       'Drawing tools',
       'Page operations',
-      'Standard support'
     ],
-    popular: false
+    mode: 'subscription',
+    popular: false,
   },
   standard: {
     name: 'Standard',
-    price: 4.99,
-    priceId: 'price_1RfWMrDG3wjiUUIBoqAYwRUb', // Replace with your actual Stripe price ID
+    price: 2.99,
+    priceId: 'price_1RiQGgDG3wjiUUIBoHmt1n4v',
     features: [
-      '100 PDFs per month',
+      '200 Downloads per month',
       'All Basic features',
       'Bulk operations',
-      'Export to multiple formats',
-      'Priority support'
+      'Priority support',
     ],
-    popular: true
+    mode: 'subscription',
+    popular: true,
   },
   professional: {
     name: 'Professional',
-    price: 9.99,
-    priceId: 'price_1RfWShDG3wjiUUIBppj9ct4X', // Replace with your actual Stripe price ID
+    price: 4.99,
+    priceId: 'price_1RiQH5DG3wjiUUIBm99OIXVG',
     features: [
-      'Unlimited PDFs',
+      '1000 Downloads per month',
       'All Standard features',
       'Advanced export options',
-      'API access',
-      'Premium support'
+      'Premium support',
     ],
-    popular: false
-  }
+    mode: 'subscription',
+    popular: false,
+  },
+  unlimited: {
+    name: 'Unlimited',
+    price: 9.99,
+    priceId: 'price_1RiQHZDG3wjiUUIBKatTQ3mV',
+    features: [
+      'Unlimited Downloads',
+      'All Professional features',
+      'One-time payment',
+      'Lifetime access',
+    ],
+    mode: 'payment',
+    popular: false,
+  },
 } as const;
 
 export type PricingTier = keyof typeof PRICING_PLANS;
@@ -60,7 +73,8 @@ export type PricingTier = keyof typeof PRICING_PLANS;
 export const createCheckoutSession = async (
   priceId: string,
   customerEmail: string,
-  userId: string
+  userId: string,
+  mode: 'subscription' | 'payment'
 ) => {
   try {
     const response = await fetch('/api/create-checkout-session', {
@@ -72,6 +86,7 @@ export const createCheckoutSession = async (
         priceId,
         customerEmail,
         userId,
+        mode,
         successUrl: `${window.location.origin}/editor?success=true`,
         cancelUrl: `${window.location.origin}/editor?canceled=true`,
       }),

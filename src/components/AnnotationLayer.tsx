@@ -23,33 +23,32 @@ interface Annotation {
 }
 
 interface AnnotationLayerProps {
+  allAnnotations: Annotation[];
+  onAnnotationsChange: (annotations: Annotation[]) => void;
   selectedTool: string | null;
   pdfScale: number;
   pageWidth: number;
   pageHeight: number;
   currentPage: number;
   toolSettings: any;
-  onAnnotationAdd?: (annotation: Annotation) => void;
-  onAnnotationDelete?: (annotationId: string) => void;
-  disabled?: boolean; // Add disabled prop for when modals are open
+  disabled?: boolean;
 }
 
 const AnnotationLayer: React.FC<AnnotationLayerProps> = ({ 
+  allAnnotations,
+  onAnnotationsChange,
   selectedTool, 
   pdfScale, 
   pageWidth, 
   pageHeight,
   currentPage,
   toolSettings,
-  onAnnotationAdd,
-  onAnnotationDelete,
   disabled = false
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
-  const [allAnnotations, setAllAnnotations] = useState<Annotation[]>([]);
   const [showTextInput, setShowTextInput] = useState(false);
   const [textInputBounds, setTextInputBounds] = useState<{x: number, y: number, width: number, height: number}>({ x: 0, y: 0, width: 200, height: 50 });
   const [textInputValue, setTextInputValue] = useState('');
@@ -84,7 +83,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   }, [pdfScale]);
 
   // Check if point is inside annotation bounds
-  const isPointInAnnotation = useCallback((point: Point, annotation: Annotation): boolean => {
+  const isPointInAnnotation = useCallback((point: Point, annotation: Annotation) => {
     if (annotation.type === 'text' && annotation.width && annotation.height) {
       const x = annotation.points[0].x;
       const y = annotation.points[0].y;
@@ -97,6 +96,24 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
         const dist = distanceToLineSegment(point, annotation.points[i], annotation.points[i + 1]);
         if (dist <= threshold) return true;
       }
+    } else if ((annotation.type === 'text' || annotation.type === 'sign') && annotation.width && annotation.height) {
+        const x = annotation.points[0].x;
+        const y = annotation.points[0].y;
+        return point.x >= x && point.x <= x + annotation.width &&
+               point.y >= y && point.y <= y + annotation.height;
+    } else if (annotation.type === 'redact' && annotation.points.length >= 2) {
+        const p1 = annotation.points[0];
+        const p2 = annotation.points[1];
+        const x = Math.min(p1.x, p2.x);
+        const y = Math.min(p1.y, p2.y);
+        const width = Math.abs(p1.x - p2.x);
+        const height = Math.abs(p1.y - p2.y);
+        return point.x >= x && point.x <= x + width &&
+               point.y >= y && point.y <= y + height;
+    } else if (annotation.type === 'line' && annotation.points.length >= 2) {
+        const threshold = Math.max(annotation.strokeWidth || 3, 10);
+        const dist = distanceToLineSegment(point, annotation.points[0], annotation.points[1]);
+        return dist <= threshold;
     }
     return false;
   }, []);
@@ -134,10 +151,9 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
   const eraseAtPoint = useCallback((point: Point) => {
     const toDelete = currentPageAnnotations.find(ann => isPointInAnnotation(point, ann));
     if (toDelete) {
-      setAllAnnotations(prev => prev.filter(ann => ann.id !== toDelete.id));
-      if (onAnnotationDelete) onAnnotationDelete(toDelete.id);
+      onAnnotationsChange(allAnnotations.filter(ann => ann.id !== toDelete.id));
     }
-  }, [currentPageAnnotations, isPointInAnnotation, onAnnotationDelete]);
+  }, [currentPageAnnotations, isPointInAnnotation, onAnnotationsChange, allAnnotations]);
 
   // Drawing functions
   const startDrawing = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -291,12 +307,11 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
       strokeWidth: currentStrokeWidth
     };
 
-    setAllAnnotations(prev => [...prev, newAnnotation]);
-    if (onAnnotationAdd) onAnnotationAdd(newAnnotation);
+    onAnnotationsChange([...allAnnotations, newAnnotation]);
     
     setIsDrawing(false);
     setCurrentPath([]);
-  }, [isDrawing, currentPath, selectedTool, onAnnotationAdd, currentPage, isCreatingTextBox, toolSettings.color, toolSettings.strokeWidth]);
+  }, [isDrawing, currentPath, selectedTool, onAnnotationsChange, allAnnotations, currentPage, isCreatingTextBox, toolSettings.color, toolSettings.strokeWidth]);
 
   // Handle text input
   const handleTextSubmit = useCallback(() => {
@@ -317,14 +332,13 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
         height: textInputBounds.height
       };
 
-      setAllAnnotations(prev => [...prev, newAnnotation]);
-      if (onAnnotationAdd) onAnnotationAdd(newAnnotation);
+      onAnnotationsChange([...allAnnotations, newAnnotation]);
     }
 
     setShowTextInput(false);
     setTextInputValue('');
     setIsCreatingTextBox(false);
-  }, [textInputValue, textInputBounds, onAnnotationAdd, currentPage, textFormatting.fontFamily, textFormatting.fontSize, textFormatting.isBold, textFormatting.isItalic, textFormatting.isUnderline, textFormatting.textColor]);
+  }, [textInputValue, textInputBounds, onAnnotationsChange, allAnnotations, currentPage, textFormatting.fontFamily, textFormatting.fontSize, textFormatting.isBold, textFormatting.isItalic, textFormatting.isUnderline, textFormatting.textColor]);
 
   // Redraw annotations for current page only
   const redrawAnnotations = useCallback(() => {

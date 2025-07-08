@@ -46,6 +46,10 @@ export default async function handler(req, res) {
     console.log('Processing webhook event:', event.type);
     
     switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object);
+        break;
+
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await handleSubscriptionChange(event.data.object);
@@ -79,6 +83,35 @@ export default async function handler(req, res) {
   }
 }
 
+async function handleCheckoutSessionCompleted(session) {
+  // This handles one-time payments
+  if (session.mode === 'payment' && session.payment_status === 'paid') {
+    const userId = session.metadata?.supabase_user_id || session.client_reference_id;
+    if (!userId) {
+      console.error('No user ID found in checkout session metadata:', session.id);
+      return;
+    }
+
+    // You might want to get the priceId to be more specific about what was purchased
+    // For now, we assume any one-time payment in this app is for the unlimited tier.
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        subscription_tier: 'unlimited',
+        subscription_status: 'active', // or 'lifetime'
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (error) {
+      console.error(`Failed to update profile for user ${userId} to unlimited`, error);
+      throw error;
+    }
+    console.log(`Updated user ${userId} to unlimited tier after one-time payment.`);
+  }
+}
+
+
 async function handleSubscriptionChange(subscription) {
   const customerId = subscription.customer;
   const subscriptionId = subscription.id;
@@ -86,9 +119,9 @@ async function handleSubscriptionChange(subscription) {
   
   // Map Stripe price IDs to your tiers
   const tierMapping = {
-    'price_1RfWLyDG3wjiUUIB8eqsutL2': 'basic',
-    'price_1RfWMrDG3wjiUUIBoqAYwRUb': 'standard', 
-    'price_1RfWShDG3wjiUUIBppj9ct4X': 'professional'
+    'price_1RiQG6DG3wjiUUIB5rrU7y1O': 'basic',
+    'price_1RiQGgDG3wjiUUIBoHmt1n4v': 'standard', 
+    'price_1RiQH5DG3wjiUUIBm99OIXVG': 'professional'
   };
   
   const tier = tierMapping[priceId];

@@ -6,11 +6,18 @@ import EditorHeader from './EditorHeader';
 import LoginModal from './LoginModal';
 import toast from 'react-hot-toast';
 
+type Annotation = {
+  id: string;
+  type: string;
+  pageNumber: number;
+  // other properties
+};
+
 const PDFEditor: React.FC = () => {
   const { user, canEditPDF, incrementPDFCount } = useAuth();
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
-  const [annotations, setAnnotations] = useState<any[]>([]);
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [currentPageNumber, setCurrentPageNumber] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -93,7 +100,7 @@ const PDFEditor: React.FC = () => {
     setSelectedTool(tool);
   };
 
-  const handleAnnotationAdd = (annotation: any) => {
+  const handleAnnotationAdd = (annotation: Annotation) => {
     setAnnotations(prev => [...prev, annotation]);
   };
 
@@ -150,10 +157,9 @@ const PDFEditor: React.FC = () => {
             selectedTool={selectedTool}
             annotations={annotations}
             toolSettings={toolSettings}
-            onAnnotationAdd={handleAnnotationAdd}
-            onAnnotationDelete={handleAnnotationDelete}
-            onPageChange={handlePageChange}
-            onTotalPagesChange={handleTotalPagesChange}
+            onAnnotationsChange={setAnnotations}
+            onPageChange={setCurrentPageNumber}
+            onTotalPagesChange={setTotalPages}
             currentPageNumber={currentPageNumber}
             isModalOpen={isAnyModalOpen}
           />

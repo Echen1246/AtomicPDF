@@ -23,8 +23,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { priceId, customerEmail, userId, successUrl, cancelUrl } = req.body;
-    console.log('Request body:', { priceId, customerEmail, userId, successUrl, cancelUrl });
+    const { priceId, customerEmail, userId, successUrl, cancelUrl, mode } = req.body;
+    console.log('Request body:', { priceId, customerEmail, userId, successUrl, cancelUrl, mode });
 
     // Validate required fields
     if (!priceId || !customerEmail || !userId) {
@@ -92,9 +92,12 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
-      mode: 'subscription',
+      mode: mode || 'subscription', // Default to subscription for backward compatibility
       success_url: successUrl || `${process.env.APP_URL || 'https://atomicpdf.org'}/editor?success=true`,
       cancel_url: cancelUrl || `${process.env.APP_URL || 'https://atomicpdf.org'}/editor?canceled=true`,
+      metadata: {
+        supabase_user_id: userId
+      },
       subscription_data: {
         metadata: {
           supabase_user_id: userId
