@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SUBSCRIPTION_LIMITS } from '../lib/supabase';
 import LoginModal from './LoginModal';
 import UserProfile from './UserProfile';
+import { Link } from 'react-router-dom';
 
 const EditorHeader: React.FC = () => {
   const { user, profile, signInWithGoogle, loading, refreshProfile } = useAuth();
@@ -17,7 +18,7 @@ const EditorHeader: React.FC = () => {
       <>
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className="w-8 h-8">
                 <svg viewBox="0 0 32 32" className="w-full h-full">
                   <rect x="6" y="4" width="18" height="24" rx="2" ry="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.5"/>
@@ -28,7 +29,7 @@ const EditorHeader: React.FC = () => {
                 </svg>
               </div>
               <h1 className="text-lg font-bold text-gray-900">AtomicPDF</h1>
-            </div>
+            </Link>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setShowLoginModal(true)}
@@ -77,7 +78,7 @@ const EditorHeader: React.FC = () => {
       <>
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className="w-8 h-8">
                 <svg viewBox="0 0 32 32" className="w-full h-full">
                   <rect x="6" y="4" width="18" height="24" rx="2" ry="2" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.5"/>
@@ -88,7 +89,7 @@ const EditorHeader: React.FC = () => {
                 </svg>
               </div>
               <h1 className="text-lg font-bold text-gray-900">AtomicPDF</h1>
-            </div>
+            </Link>
             
             <div className="flex items-center space-x-3">
               {/* Usage indicator */}

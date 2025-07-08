@@ -155,7 +155,7 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
             <p className="text-gray-600 mt-1">Perfect for trying AtomicPDF</p>
             <div className="mt-2 flex flex-wrap gap-2">
               <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">
-                1 PDF per month
+                3 PDFs per month
               </span>
               <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">
                 Basic editing
@@ -220,10 +220,10 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 
                 {/* Price */}
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900">
-                    ${plan.price}
+                  <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
+                  <span className="text-lg text-gray-500">
+                    {plan.mode === 'subscription' ? '/month' : '/one-time'}
                   </span>
-                  <span className="text-gray-600">/month</span>
                 </div>
 
                 {/* Features */}

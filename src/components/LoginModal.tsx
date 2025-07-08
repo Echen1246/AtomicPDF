@@ -111,7 +111,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
                       <svg className="w-3 h-3 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
-                      1 PDF per month
+                      3 PDFs per month
                     </li>
                     <li className="flex items-center">
                       <svg className="w-3 h-3 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -144,7 +144,9 @@ const LoginModal: React.FC<LoginModalProps> = ({
                       </div>
                       <div className="text-xl font-bold text-gray-900">
                         ${plan.price}
-                        <span className="text-sm font-normal text-gray-500">/mo</span>
+                        <span className="text-sm font-normal text-gray-500">
+                          {plan.mode === 'subscription' ? '/mo' : '/one-time'}
+                        </span>
                       </div>
                     </div>
                     <ul className="space-y-1 text-xs text-gray-600">
@@ -161,11 +163,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 ))}
               </div>
 
-              <div className="mt-4 text-center">
-                <p className="text-xs text-gray-500">
-                  All plans include 7-day free trial • Cancel anytime
-                </p>
-              </div>
             </div>
           </div>
 
