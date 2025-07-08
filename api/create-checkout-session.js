@@ -83,37 +83,42 @@ export default async function handler(req, res) {
     console.log('Creating checkout session with priceId:', priceId);
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       customer: customer.id,
-      payment_method_types: ['card'], // Explicitly allow credit/debit cards
+      payment_method_types: ['card'],
       line_items: [
         {
           price: priceId,
           quantity: 1,
         },
       ],
-      mode: mode || 'subscription', // Default to subscription for backward compatibility
+      mode: mode || 'subscription',
       success_url: successUrl || `${process.env.APP_URL || 'https://atomicpdf.org'}/editor?success=true`,
       cancel_url: cancelUrl || `${process.env.APP_URL || 'https://atomicpdf.org'}/editor?canceled=true`,
       metadata: {
-        supabase_user_id: userId
-      },
-      subscription_data: {
-        metadata: {
-          supabase_user_id: userId
-        }
+        supabase_user_id: userId,
       },
       customer_update: {
         name: 'auto',
-        address: 'auto'
+        address: 'auto',
       },
       tax_id_collection: {
-        enabled: true
+        enabled: true,
       },
       automatic_tax: {
-        enabled: false
-      }
-    });
+        enabled: false,
+      },
+    };
+
+    if (mode === 'subscription') {
+      sessionParams.subscription_data = {
+        metadata: {
+          supabase_user_id: userId,
+        },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log('Checkout session created successfully:', session.id);
     console.log('=== CHECKOUT SESSION DEBUG END ===');
