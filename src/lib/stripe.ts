@@ -13,8 +13,8 @@ export default getStripe;
 
 // Pricing configuration
 export const PRICING_PLANS = {
-  pro: {
-    name: 'Pro',
+  lifetime: {
+    name: 'Lifetime',
     price: 0.99,
     priceId: 'price_1Ro8WVDG3wjiUUIBrGhDzcWh',
     features: [

@@ -16,6 +16,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  console.log('--- STRIPE WEBHOOK INVOCATION START ---');
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Method not allowed' });
@@ -24,29 +25,28 @@ export default async function handler(req, res) {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   
+  console.log('Webhook secret is set:', !!webhookSecret);
+  
   let event;
 
   try {
-    // Use micro's buffer to read the raw body properly in Vercel
     const rawBody = await buffer(req);
-    
-    console.log('Webhook received - Body length:', rawBody.length);
-    console.log('Webhook signature:', sig);
-    console.log('Using webhook secret:', webhookSecret ? 'Yes (length: ' + webhookSecret.length + ')' : 'No');
-    
+    console.log('Received raw body length:', rawBody.length);
+    console.log('Received stripe-signature header:', sig);
+
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-    console.log('Webhook event constructed successfully:', event.type);
+    console.log('SUCCESS: Stripe event constructed:', event.type, event.id);
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
-    console.error('Error details:', err);
-    return res.status(400).json({ error: 'Invalid signature' });
+    console.error('ERROR: Webhook signature verification failed.', err);
+    return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
+  console.log(`Processing event type: ${event.type}`);
+
   try {
-    console.log('Processing webhook event:', event.type);
-    
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('Handling checkout.session.completed...');
         await handleCheckoutSessionCompleted(event.data.object);
         break;
 
@@ -76,38 +76,60 @@ export default async function handler(req, res) {
         console.log(`Unhandled event type: ${event.type}`);
     }
 
+    console.log('--- STRIPE WEBHOOK INVOCATION END: SUCCESS ---');
     res.status(200).json({ received: true });
   } catch (error) {
-    console.error('Webhook handler error:', error);
+    console.error('ERROR: Webhook handler failed.', {
+      eventType: event.type,
+      errorMessage: error.message,
+      errorStack: error.stack,
+    });
+    console.log('--- STRIPE WEBHOOK INVOCATION END: FAILED ---');
     res.status(500).json({ error: 'Webhook handler failed' });
   }
 }
 
 async function handleCheckoutSessionCompleted(session) {
+  console.log('Inside handleCheckoutSessionCompleted. Session ID:', session.id);
+  console.log('Session mode:', session.mode);
+  console.log('Session payment_status:', session.payment_status);
+
   // This handles one-time payments
   if (session.mode === 'payment' && session.payment_status === 'paid') {
-    const userId = session.metadata?.supabase_user_id || session.client_reference_id;
+    const userId = session.metadata?.supabase_user_id;
+    
+    console.log('User ID from metadata:', userId);
+
     if (!userId) {
-      console.error('No user ID found in checkout session metadata:', session.id);
+      console.error('CRITICAL: No supabase_user_id found in session metadata.');
       return;
     }
 
-    // You might want to get the priceId to be more specific about what was purchased
-    // For now, we assume any one-time payment in this app is for the unlimited tier.
-    const { error } = await supabase
+    console.log(`Attempting to update profile for user: ${userId} to 'lifetime' tier.`);
+
+    const { data, error } = await supabase
       .from('profiles')
       .update({
-        subscription_tier: 'pro',
+        subscription_tier: 'lifetime',
         subscription_status: 'active', // or 'lifetime'
-        updated_at: new Date().toISOString()
       })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
     if (error) {
-      console.error(`Failed to update profile for user ${userId} to pro tier`, error);
-      throw error;
+      console.error('ERROR: Supabase profile update failed.', {
+        userId: userId,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+      });
+      throw new Error(`Supabase update failed: ${error.message}`);
     }
-    console.log(`Updated user ${userId} to pro tier after one-time payment.`);
+    
+    console.log(`SUCCESS: Supabase profile updated for user ${userId}.`);
+    console.log('Updated profile data:', data);
+  } else {
+    console.log('Skipping profile update: session mode is not "payment" or payment_status is not "paid".');
   }
 }
 

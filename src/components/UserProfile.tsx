@@ -12,7 +12,7 @@ const UserProfile: React.FC = () => {
     return null;
   }
 
-  const currentLimits = SUBSCRIPTION_LIMITS[profile.subscription_tier];
+  const currentLimits = SUBSCRIPTION_LIMITS[profile.subscription_tier as keyof typeof SUBSCRIPTION_LIMITS];
   const usagePercentage = currentLimits.pdfs_per_month === -1 
     ? 0 
     : (profile.pdf_count_used / currentLimits.pdfs_per_month) * 100;

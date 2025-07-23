@@ -84,13 +84,13 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 
   const getPlanIcon = (tier: PricingTier) => {
     switch (tier) {
-      case 'pro': return <Star className="w-6 h-6" />;
+      case 'lifetime': return <Star className="w-6 h-6" />;
     }
   };
 
   const getPlanColor = (tier: PricingTier) => {
     switch (tier) {
-      case 'pro': return 'text-purple-600 bg-purple-50 border-purple-200';
+      case 'lifetime': return 'text-purple-600 bg-purple-50 border-purple-200';
     }
   };
 
@@ -101,8 +101,8 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   const canUpgrade = (tier: PricingTier) => {
     if (!profile) return false;
     
-    // Allow purchase if the user is not already on the 'pro' (lifetime) plan.
-    return profile.subscription_tier !== 'pro';
+    // Allow purchase if the user is not already on the 'lifetime' (lifetime) plan.
+    return profile.subscription_tier !== 'lifetime';
   };
 
   const isLegacyPlan = profile && ['basic', 'standard', 'professional'].includes(profile.subscription_tier);
