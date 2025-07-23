@@ -101,8 +101,8 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   const canUpgrade = (tier: PricingTier) => {
     if (!profile) return false;
     
-    // Allow purchase if the user is not already on the 'unlimited' (lifetime) plan.
-    return profile.subscription_tier !== 'unlimited';
+    // Allow purchase if the user is not already on the 'pro' (lifetime) plan.
+    return profile.subscription_tier !== 'pro';
   };
 
   const isLegacyPlan = profile && ['basic', 'standard', 'professional'].includes(profile.subscription_tier);

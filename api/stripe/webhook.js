@@ -97,17 +97,17 @@ async function handleCheckoutSessionCompleted(session) {
     const { error } = await supabase
       .from('profiles')
       .update({
-        subscription_tier: 'unlimited',
+        subscription_tier: 'pro',
         subscription_status: 'active', // or 'lifetime'
         updated_at: new Date().toISOString()
       })
       .eq('id', userId);
 
     if (error) {
-      console.error(`Failed to update profile for user ${userId} to unlimited`, error);
+      console.error(`Failed to update profile for user ${userId} to pro tier`, error);
       throw error;
     }
-    console.log(`Updated user ${userId} to unlimited tier after one-time payment.`);
+    console.log(`Updated user ${userId} to pro tier after one-time payment.`);
   }
 }
 
