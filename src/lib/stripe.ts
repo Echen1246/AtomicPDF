@@ -13,57 +13,18 @@ export default getStripe;
 
 // Pricing configuration
 export const PRICING_PLANS = {
-  basic: {
-    name: 'Basic',
+  pro: {
+    name: 'Pro',
     price: 0.99,
-    priceId: 'price_1RiQG6DG3wjiUUIB5rrU7y1O',
-    features: [
-      '50 Downloads per month',
-      'Text annotations & highlights',
-      'Drawing tools',
-      'Page operations',
-    ],
-    mode: 'subscription',
-    popular: false,
-  },
-  standard: {
-    name: 'Standard',
-    price: 2.99,
-    priceId: 'price_1RiQGgDG3wjiUUIBoHmt1n4v',
-    features: [
-      '200 Downloads per month',
-      'All Basic features',
-      'Bulk operations',
-      'Priority support',
-    ],
-    mode: 'subscription',
-    popular: true,
-  },
-  professional: {
-    name: 'Professional',
-    price: 4.99,
-    priceId: 'price_1RiQH5DG3wjiUUIBm99OIXVG',
-    features: [
-      '1000 Downloads per month',
-      'All Standard features',
-      'Advanced export options',
-      'Premium support',
-    ],
-    mode: 'subscription',
-    popular: false,
-  },
-  unlimited: {
-    name: 'Unlimited',
-    price: 9.99,
-    priceId: 'price_1RiQHZDG3wjiUUIBKatTQ3mV',
+    priceId: 'price_1Ro8WVDG3wjiUUIBrGhDzcWh',
     features: [
       'Unlimited Downloads',
-      'All Professional features',
+      'All editing features',
       'One-time payment',
       'Lifetime access',
     ],
     mode: 'payment',
-    popular: false,
+    popular: true,
   },
 } as const;
 

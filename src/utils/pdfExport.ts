@@ -74,7 +74,7 @@ export const exportPDFWithAnnotations = async (
           const x = annotation.points[0].x;
           // pdf-lib origin is bottom-left, so we need to adjust y
           const y = pageHeight - annotation.points[0].y - (annotation.height || 50);
-
+          
           page.drawText(annotation.text, {
             x: x + 5,
             y: y + (annotation.height || 50) - fontSize - 5,

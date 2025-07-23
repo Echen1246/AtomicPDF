@@ -119,6 +119,7 @@ async function handleSubscriptionChange(subscription) {
   
   // Map Stripe price IDs to your tiers
   const tierMapping = {
+    // Legacy Plans (for existing subscribers)
     'price_1RiQG6DG3wjiUUIB5rrU7y1O': 'basic',
     'price_1RiQGgDG3wjiUUIBoHmt1n4v': 'standard', 
     'price_1RiQH5DG3wjiUUIBm99OIXVG': 'professional'

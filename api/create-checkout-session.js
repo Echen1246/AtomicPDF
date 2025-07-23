@@ -95,7 +95,7 @@ export default async function handler(req, res) {
       mode: mode || 'subscription',
       success_url: successUrl || `${process.env.APP_URL || 'https://atomicpdf.org'}/editor?success=true`,
       cancel_url: cancelUrl || `${process.env.APP_URL || 'https://atomicpdf.org'}/editor?canceled=true`,
-      metadata: {
+        metadata: {
         supabase_user_id: userId,
       },
       customer_update: {

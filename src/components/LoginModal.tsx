@@ -87,7 +87,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
                 <div className="text-center">
                   <p className="text-sm text-gray-500">
-                    Start with 1 FREE PDF • No credit card required
+                    Start with 3 FREE PDFs • No credit card required
                   </p>
                 </div>
               </div>
@@ -122,47 +122,41 @@ const LoginModal: React.FC<LoginModalProps> = ({
                   </ul>
                 </div>
 
-                {/* Paid Plans */}
-                {Object.entries(PRICING_PLANS).map(([key, plan]) => (
-                  <div
-                    key={key}
-                    className={`bg-white rounded-lg border p-4 ${
-                      plan.popular ? 'border-blue-500 ring-1 ring-blue-200' : 'border-gray-200'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <div>
-                        <div className="flex items-center">
-                          <h4 className="font-semibold text-gray-900">{plan.name}</h4>
-                          {plan.popular && (
-                            <span className="ml-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                              Popular
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-600">Most popular choice</p>
-                      </div>
-                      <div className="text-xl font-bold text-gray-900">
-                        ${plan.price}
-                        <span className="text-sm font-normal text-gray-500">
-                          {plan.mode === 'subscription' ? '/mo' : '/one-time'}
+                {/* Paid Plan */}
+                <div
+                  className="bg-white rounded-lg border p-4 border-blue-500 ring-1 ring-blue-200"
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <div>
+                      <div className="flex items-center">
+                        <h4 className="font-semibold text-gray-900">Pro</h4>
+                        <span className="ml-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                          Best Value
                         </span>
                       </div>
+                      <p className="text-xs text-gray-600">One-time payment</p>
                     </div>
-                    <ul className="space-y-1 text-xs text-gray-600">
-                      {plan.features.slice(0, 2).map((feature, index) => (
-                        <li key={index} className="flex items-center">
-                          <svg className="w-3 h-3 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="text-xl font-bold text-gray-900">
+                      $0.99
+                      <span className="text-sm font-normal text-gray-500">/one-time</span>
+                    </div>
                   </div>
-                ))}
+                  <ul className="space-y-1 text-xs text-gray-600">
+                    <li className="flex items-center">
+                      <svg className="w-3 h-3 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      Unlimited usage
+                    </li>
+                    <li className="flex items-center">
+                      <svg className="w-3 h-3 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      All Pro features
+                    </li>
+                  </ul>
+                </div>
               </div>
-
             </div>
           </div>
 

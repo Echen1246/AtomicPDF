@@ -84,19 +84,13 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 
   const getPlanIcon = (tier: PricingTier) => {
     switch (tier) {
-      case 'basic': return <Zap className="w-6 h-6" />;
-      case 'standard': return <Star className="w-6 h-6" />;
-      case 'professional': return <Crown className="w-6 h-6" />;
-      case 'unlimited': return <Crown className="w-6 h-6" />;
+      case 'pro': return <Star className="w-6 h-6" />;
     }
   };
 
   const getPlanColor = (tier: PricingTier) => {
     switch (tier) {
-      case 'basic': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'standard': return 'text-purple-600 bg-purple-50 border-purple-200';
-      case 'professional': return 'text-amber-600 bg-amber-50 border-amber-200';
-      case 'unlimited': return 'text-emerald-600 bg-emerald-50 border-emerald-200';
+      case 'pro': return 'text-purple-600 bg-purple-50 border-purple-200';
     }
   };
 
@@ -107,16 +101,11 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   const canUpgrade = (tier: PricingTier) => {
     if (!profile) return false;
     
-    const tierOrder: Record<string, number> = {
-      'free': 0,
-      'basic': 1,
-      'standard': 2,
-      'professional': 3,
-      'unlimited': 4
-    };
-    
-    return tierOrder[profile.subscription_tier] < tierOrder[tier];
+    // Allow purchase if the user is not already on the 'unlimited' (lifetime) plan.
+    return profile.subscription_tier !== 'unlimited';
   };
+
+  const isLegacyPlan = profile && ['basic', 'standard', 'professional'].includes(profile.subscription_tier);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -133,11 +122,19 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
         {showCurrentPlan && profile && (
           <div className="mt-4 inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
             Current Plan: {profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1)}
+            {isLegacyPlan && " (Legacy)"}
             {profile.subscription_tier !== 'free' && (
               <span className="ml-2 text-xs">
                 • {profile.pdf_count_used} PDFs used this month
               </span>
             )}
+          </div>
+        )}
+
+        {isLegacyPlan && (
+          <div className="mt-4 p-4 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm">
+            <p className="font-medium mb-1">You are on a legacy subscription plan.</p>
+            <p>You can choose to switch to the new one-time payment plan below for lifetime access. Your current subscription will be replaced.</p>
           </div>
         )}
       </div>
@@ -172,7 +169,7 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
       </div>
 
       {/* Paid Plans */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-1 gap-6">
         {Object.entries(PRICING_PLANS).map(([tierKey, plan]) => {
           const tier = tierKey as PricingTier;
           const isCurrent = isCurrentPlan(tier);
@@ -221,9 +218,7 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
                 {/* Price */}
                 <div className="mb-4">
                   <span className="text-4xl font-bold text-gray-900">${plan.price}</span>
-                  <span className="text-lg text-gray-500">
-                    {plan.mode === 'subscription' ? '/month' : '/one-time'}
-                  </span>
+                  <span className="text-lg text-gray-500">/one-time</span>
                 </div>
 
                 {/* Features */}
@@ -258,9 +253,9 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
                   ) : isCurrent ? (
                     'Current Plan'
                   ) : canUpgradeToPlan ? (
-                    'Upgrade Now'
+                    'Get Lifetime Access'
                   ) : (
-                    'Downgrade'
+                    'Already Owned'
                   )}
                 </button>
               </div>

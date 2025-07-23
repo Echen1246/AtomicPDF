@@ -205,7 +205,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
       ctx.setLineDash([]);
       return;
     }
-    
+
     if (selectedTool === 'eraser') {
       eraseAtPoint(pos);
       // Redraw canvas to show visual feedback of erased annotations
@@ -406,7 +406,7 @@ const AnnotationLayer: React.FC<AnnotationLayerProps> = ({
              ctx.stroke();
            }
          });
-      } else if (annotation.type === 'draw' || annotation.type === 'highlight') {
+              } else if (annotation.type === 'draw' || annotation.type === 'highlight') {
           ctx.globalAlpha = annotation.type === 'highlight' ? 0.4 : 1;
           ctx.strokeStyle = annotation.color || (annotation.type === 'highlight' ? '#ffff00' : '#ff0000');
           ctx.lineWidth = annotation.strokeWidth || (annotation.type === 'highlight' ? 15 : 3);
