@@ -11,7 +11,7 @@ export interface Profile {
   email: string;
   full_name: string;
   avatar_url?: string;
-  subscription_tier: 'free' | 'lifetime' | 'basic' | 'standard' | 'professional';
+  subscription_tier: 'free' | 'lifetime';
   subscription_status: 'active' | 'canceled' | 'past_due' | 'trialing';
   stripe_customer_id?: string;
   pdf_count_used: number;
@@ -24,7 +24,7 @@ export interface Subscription {
   user_id: string;
   stripe_subscription_id: string;
   stripe_price_id: string;
-  tier: 'lifetime' | 'basic' | 'standard' | 'professional';
+  tier: 'lifetime';
   status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
   current_period_start: string;
   current_period_end: string;
@@ -37,18 +37,6 @@ export const SUBSCRIPTION_LIMITS = {
   free: {
     pdfs_per_month: 3,
     features: ['basic_editing', 'text_annotations', 'highlights']
-  },
-  basic: {
-    pdfs_per_month: 50,
-    features: ['basic_editing', 'text_annotations', 'highlights', 'drawing', 'page_operations']
-  },
-  standard: {
-    pdfs_per_month: 200,
-    features: ['basic_editing', 'text_annotations', 'highlights', 'drawing', 'page_operations', 'bulk_operations', 'export_formats']
-  },
-  professional: {
-    pdfs_per_month: 1000,
-    features: ['all_features', 'priority_support', 'advanced_exports', 'api_access']
   },
   lifetime: {
     pdfs_per_month: -1, // unlimited

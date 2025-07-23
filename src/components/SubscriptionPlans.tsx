@@ -105,8 +105,6 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
     return profile.subscription_tier !== 'lifetime';
   };
 
-  const isLegacyPlan = profile && ['basic', 'standard', 'professional'].includes(profile.subscription_tier);
-
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header */}
@@ -122,19 +120,11 @@ const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
         {showCurrentPlan && profile && (
           <div className="mt-4 inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
             Current Plan: {profile.subscription_tier.charAt(0).toUpperCase() + profile.subscription_tier.slice(1)}
-            {isLegacyPlan && " (Legacy)"}
             {profile.subscription_tier !== 'free' && (
               <span className="ml-2 text-xs">
                 • {profile.pdf_count_used} PDFs used this month
               </span>
             )}
-          </div>
-        )}
-
-        {isLegacyPlan && (
-          <div className="mt-4 p-4 bg-amber-50 text-amber-800 rounded-lg border border-amber-200 text-sm">
-            <p className="font-medium mb-1">You are on a legacy subscription plan.</p>
-            <p>You can choose to switch to the new one-time payment plan below for lifetime access. Your current subscription will be replaced.</p>
           </div>
         )}
       </div>

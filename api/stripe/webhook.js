@@ -135,172 +135,24 @@ async function handleCheckoutSessionCompleted(session) {
 
 
 async function handleSubscriptionChange(subscription) {
-  const customerId = subscription.customer;
-  const subscriptionId = subscription.id;
-  const priceId = subscription.items.data[0].price.id;
-  
-  // Map Stripe price IDs to your tiers
-  const tierMapping = {
-    // Legacy Plans (for existing subscribers)
-    'price_1RiQG6DG3wjiUUIB5rrU7y1O': 'basic',
-    'price_1RiQGgDG3wjiUUIBoHmt1n4v': 'standard', 
-    'price_1RiQH5DG3wjiUUIBm99OIXVG': 'professional'
-  };
-  
-  const tier = tierMapping[priceId];
-  if (!tier) {
-    throw new Error(`Unknown price ID: ${priceId}`);
-  }
-
-  // Find user by Stripe customer ID
-  const { data: profile, error: findError } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('stripe_customer_id', customerId)
-    .single();
-
-  if (findError || !profile) {
-    throw new Error(`Profile not found for customer: ${customerId}`);
-  }
-
-  // Update or create subscription record
-  const { error: subError } = await supabase
-    .from('subscriptions')
-    .upsert({
-      user_id: profile.id,
-      stripe_subscription_id: subscriptionId,
-      stripe_price_id: priceId,
-      stripe_product_id: subscription.items.data[0].price.product,
-      tier: tier,
-      status: subscription.status,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-      trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null
-    }, {
-      onConflict: 'stripe_subscription_id'
-    });
-
-  if (subError) throw subError;
-
-  // Update profile
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .update({
-      subscription_tier: tier,
-      subscription_status: subscription.status,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', profile.id);
-
-  if (profileError) throw profileError;
-
-  console.log(`Updated subscription for user ${profile.id} to ${tier}`);
+  // This function is now effectively deprecated as we only have one-time payments for new customers.
+  // We keep it here to handle any potential lingering events from legacy subscriptions.
+  console.log('handleSubscriptionChange called for legacy subscription:', subscription.id);
 }
 
 async function handleSubscriptionCancellation(subscription) {
-  const { error } = await supabase
-    .from('subscriptions')
-    .update({
-      status: 'canceled',
-      updated_at: new Date().toISOString()
-    })
-    .eq('stripe_subscription_id', subscription.id);
-
-  if (error) throw error;
-
-  // Update profile to free tier if subscription ends immediately
-  if (!subscription.cancel_at_period_end) {
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', subscription.id)
-      .single();
-
-    if (sub) {
-      await supabase
-        .from('profiles')
-        .update({
-          subscription_tier: 'free',
-          subscription_status: 'active',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', sub.user_id);
-    }
-  }
-
-  console.log(`Canceled subscription: ${subscription.id}`);
+  // This function is now effectively deprecated
+  console.log('handleSubscriptionCancellation called for legacy subscription:', subscription.id);
 }
 
 async function handlePaymentSuccess(invoice) {
-  const subscriptionId = invoice.subscription;
-  
-  if (subscriptionId) {
-    const { error } = await supabase
-      .from('subscriptions')
-      .update({
-        status: 'active',
-        updated_at: new Date().toISOString()
-      })
-      .eq('stripe_subscription_id', subscriptionId);
-
-    if (error) throw error;
-    
-    // Also update profile status
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', subscriptionId)
-      .single();
-
-    if (sub) {
-      await supabase
-        .from('profiles')
-        .update({
-          subscription_status: 'active',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', sub.user_id);
-    }
-    
-    console.log(`Payment succeeded for subscription: ${subscriptionId}`);
-  }
+  // This function is now effectively deprecated for new purchases
+  console.log('handlePaymentSuccess called for legacy subscription invoice:', invoice.id);
 }
 
 async function handlePaymentFailure(invoice) {
-  const subscriptionId = invoice.subscription;
-  
-  if (subscriptionId) {
-    const { error } = await supabase
-      .from('subscriptions')
-      .update({
-        status: 'past_due',
-        updated_at: new Date().toISOString()
-      })
-      .eq('stripe_subscription_id', subscriptionId);
-
-    if (error) throw error;
-    
-    // Also update profile status
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('user_id')
-      .eq('stripe_subscription_id', subscriptionId)
-      .single();
-
-    if (sub) {
-      await supabase
-        .from('profiles')
-        .update({
-          subscription_status: 'past_due',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', sub.user_id);
-    }
-    
-    console.log(`Payment failed for subscription: ${subscriptionId}`);
-  }
+  // This function is now effectively deprecated
+  console.log('handlePaymentFailure called for legacy subscription invoice:', invoice.id);
 }
 
 async function handleCustomerChange(customer) {
