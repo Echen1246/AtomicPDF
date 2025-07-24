@@ -17,7 +17,22 @@ export const config = {
 
 export default async function handler(req, res) {
   console.log('--- STRIPE WEBHOOK INVOCATION START ---');
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+  console.log('Request headers:', JSON.stringify(req.headers, null, 2));
+  
+  if (req.method === 'GET') {
+    // This might be a health check or redirect - respond with basic info
+    console.log('Received GET request - might be a health check or redirect');
+    return res.status(200).json({ 
+      message: 'Webhook endpoint is active',
+      method: 'GET',
+      timestamp: new Date().toISOString()
+    });
+  }
+  
   if (req.method !== 'POST') {
+    console.log('Non-POST request received:', req.method);
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -26,8 +41,9 @@ export default async function handler(req, res) {
 
   try {
     const rawBody = await buffer(req);
-    // Reverting to parsing the event directly from the body without strict signature verification for now.
-    // This is less secure but will help us bypass the current blocking issue.
+    console.log('Raw body length:', rawBody.length);
+    
+    // Parse the event directly from the body
     event = JSON.parse(rawBody.toString());
     console.log('SUCCESS: Stripe event parsed from body:', event.type, event.id);
   } catch (err) {
